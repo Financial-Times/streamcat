@@ -3,7 +3,7 @@
   "devDependencies": {
     "mocha": "^2.2.4"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Concatenate ReadStreams and Buffers!",
   "main": "index.js",
   "directories": {
@@ -24,11 +24,11 @@
     "buffer"
   ],
   "contributors": [
-	{
-	  "name": "FT Labs",
-	  "email": "enquiries@labs.ft.com",
-	  "url": "http://labs.ft.com"
-  	}
+    {
+      "name": "FT Labs",
+      "email": "enquiries@labs.ft.com",
+      "url": "http://labs.ft.com"
+    }
   ],
   "license": "MIT",
   "bugs": {
