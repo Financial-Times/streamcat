@@ -6,7 +6,6 @@ var PassThrough = require('stream').PassThrough;
  * the writable stream in order.
  */
 function streamCat(streams, writeable, endCallback) {
-    var finished = endCallback || function() {};
 
     var concatenate = streams.reduceRight(function(next, stream) {
         return function() { handleStream(stream, writeable, next); };
