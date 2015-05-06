@@ -30,7 +30,7 @@ You can mix `Buffer` and `ReadStream` usage, in this instance, the `String`
 ```JS
 streamCat([
 	fs.createReadStream('myfileA'),
-	new Buffer*("Some content"),
+	new Buffer("Some content"),
 	fs.createReadStream('myfileB')
 ]).pipe(process.stdout);
 ```
