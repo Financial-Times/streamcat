@@ -1,0 +1,38 @@
+{
+  "name": "streamcat",
+  "devDependencies": {
+    "mocha": "^2.2.4"
+  },
+  "version": "1.0.0",
+  "description": "Concatenate ReadStreams and Buffers!",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/Financial-Times/streamcat"
+  },
+  "keywords": [
+    "streams",
+    "concatenation",
+    "read",
+    "buffer"
+  ],
+  "contributors": [
+	{
+	  "name": "FT Labs",
+	  "email": "enquiries@labs.ft.com",
+	  "url": "http://labs.ft.com"
+  	}
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Financial-Times/streamcat/issues"
+  },
+  "homepage": "https://github.com/Financial-Times/streamcat"
+}
