@@ -36,6 +36,18 @@ describe("streamCat(streams)", function() {
 			done();
 		}).catch(done);
 	});
+
+	it("should recursively resolve any Promise values passed to the streams", function(done) {
+		var readStreamPromiseA = Promise.resolve(streamCat([new Buffer("A")]));
+		var readBufferPromiseB  = Promise.resolve(new Buffer("B"));
+
+		var readStream = streamCat([readStreamPromiseA, readBufferPromiseB]);
+
+		bufferStream(readStream).then(function(streamContent) {
+			assert.equal("AB", streamContent);
+			done();
+		}).catch(done);
+	});
 });
 
 function bufferStream(stream) {

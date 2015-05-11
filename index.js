@@ -18,6 +18,10 @@ function handleStream(inputStream, outputStream, next) {
 	if (inputStream instanceof Buffer) {
 		outputStream.write(inputStream);
 		process.nextTick(next);
+	} else if (inputStream instanceof Promise) {
+		inputStream.then(function(content) {
+			return handleStream(content, outputStream, next);
+		});
 	} else {
 		inputStream.on('data', function(chunk, enc) {
 			outputStream.write(chunk, enc);
