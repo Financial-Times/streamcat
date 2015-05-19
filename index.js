@@ -33,6 +33,11 @@ function handleStream(inputStream, outputStream, next) {
 		inputStream.on('end', function() {
 			next();
 		});
+
+		inputStream.on('error', function(error) {
+			outputStream.emit('error', error);
+			outputStream.end();
+		});
 	}
 }
 

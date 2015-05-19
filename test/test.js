@@ -58,6 +58,16 @@ describe("streamCat(streams)", function() {
 			done();
 		});
 	});
+
+	it("should pass through any errors from concatenated streams", function(done) {
+		var readStreamFail = streamCat([Promise.reject(new Error("fail"))]);
+		var readStream = streamCat([readStreamFail]);
+
+		readStream.on("error", function(error) {
+			assert.equal(error.message, "fail");
+			done();
+		});
+	});
 });
 
 function bufferStream(stream) {
