@@ -21,10 +21,7 @@ function handleStream(inputStream, outputStream, next) {
 	} else if (inputStream instanceof Promise) {
 		inputStream.then(function(content) {
 			return handleStream(content, outputStream, next);
-		}).catch(function(error) {
-			outputStream.emit('error', error);
-			outputStream.end();
-		});
+		}).catch(handleError);
 	} else {
 		inputStream.on('data', function(chunk, enc) {
 			outputStream.write(chunk, enc);
@@ -34,10 +31,12 @@ function handleStream(inputStream, outputStream, next) {
 			next();
 		});
 
-		inputStream.on('error', function(error) {
-			outputStream.emit('error', error);
-			outputStream.end();
-		});
+		inputStream.on('error', handleError);
+	}
+
+	function handleError(error) {
+		outputStream.emit('error', error);
+		outputStream.end();
 	}
 }
 
