@@ -3,7 +3,7 @@
   "devDependencies": {
     "mocha": "^2.2.4"
   },
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Concatenate ReadStreams and Buffers!",
   "main": "index.js",
   "directories": {
