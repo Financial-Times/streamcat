@@ -41,8 +41,8 @@ function handleStream(inputStream, outputStream, next) {
 	}
 
 	function handleError(error) {
-		outputStream.end();
 		outputStream.emit('error', error);
+		outputStream.end();
 	}
 }
 
