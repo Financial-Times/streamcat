@@ -1,5 +1,7 @@
 'use strict';
-var PassThrough = require('stream').PassThrough;
+var stream = require('stream');
+var Readable = stream.Readable;
+var PassThrough = stream.PassThrough;
 
 /**
  * Given an ordered list of streams and Buffers, streamCat will pipe each stream or buffer to
@@ -18,11 +20,11 @@ function handleStream(inputStream, outputStream, next) {
 	if (inputStream instanceof Buffer) {
 		outputStream.write(inputStream);
 		process.nextTick(next);
-	} else if (inputStream instanceof Promise) {
+	} else if (inputStream instanceof Promise || (inputStream.then && inputStream.catch)) {
 		inputStream.then(function(content) {
 			return handleStream(content, outputStream, next);
 		}).catch(handleError);
-	} else {
+	} else if (inputStream instanceof Readable) {
 		inputStream.on('data', function(chunk, enc) {
 			outputStream.write(chunk, enc);
 		});
@@ -32,6 +34,10 @@ function handleStream(inputStream, outputStream, next) {
 		});
 
 		inputStream.on('error', handleError);
+	} else {
+		process.nextTick(function() {
+			handleError(new Error("Invalid stream component '" + (typeof inputStream) + "', must be: stream.Readable, Buffer, or Promise"))
+		});
 	}
 
 	function handleError(error) {
@@ -39,6 +45,7 @@ function handleStream(inputStream, outputStream, next) {
 		outputStream.end();
 	}
 }
+
 
 module.exports = function(streams) {
 	var passThrough = new PassThrough();

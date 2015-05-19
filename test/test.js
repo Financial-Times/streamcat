@@ -68,6 +68,15 @@ describe("streamCat(streams)", function() {
 			done();
 		});
 	});
+
+	it("should throw an error when encountering an invalid stream component type", function(done) {
+		var badStream = streamCat([{ an: "object" }]);
+
+		badStream.on("error", function(error) {
+			assert.equal(error.message, "Invalid stream component 'object', must be: stream.Readable, Buffer, or Promise");
+			done();
+		});
+	});
 });
 
 function bufferStream(stream) {
