@@ -21,6 +21,9 @@ function handleStream(inputStream, outputStream, next) {
 	} else if (inputStream instanceof Promise) {
 		inputStream.then(function(content) {
 			return handleStream(content, outputStream, next);
+		}).catch(function(error) {
+			outputStream.emit('error', error);
+			outputStream.end();
 		});
 	} else {
 		inputStream.on('data', function(chunk, enc) {

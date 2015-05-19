@@ -48,6 +48,16 @@ describe("streamCat(streams)", function() {
 			done();
 		}).catch(done);
 	});
+
+	it("should pass through any errors generated from a Promise to the stream", function(done) {
+		var readStreamPromiseFail = Promise.reject(new Error("fail"));
+		var readStream = streamCat([readStreamPromiseFail]);
+
+		readStream.on("error", function(error) {
+			assert.equal(error.message, "fail");
+			done();
+		});
+	});
 });
 
 function bufferStream(stream) {
