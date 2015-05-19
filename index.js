@@ -24,7 +24,7 @@ function handleStream(inputStream, outputStream, next) {
 		inputStream.then(function(content) {
 			return handleStream(content, outputStream, next);
 		}).catch(handleError);
-	} else if (inputStream instanceof Readable) {
+	} else if (inputStream instanceof Readable || (inputStream.on && inputStream.read)) {
 		inputStream.on('data', function(chunk, enc) {
 			outputStream.write(chunk, enc);
 		});
