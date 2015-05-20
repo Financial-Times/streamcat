@@ -51,7 +51,7 @@ function handleStream(inputStream, outputStream, next) {
 
 module.exports = function(streams) {
 	var passThrough = new PassThrough();
-	passThrough.__streamCatBufferedError = null;
+	var streamCatBufferedError = null;
 
 	var originalPassthroughOn = passThrough.on.bind(passThrough);
 
@@ -63,16 +63,19 @@ module.exports = function(streams) {
 	// error handler has been attached it gets buffered.  Then, when the
 	// appropriate event handler is attached, the event is fired and the
 	// appropriate handler can pick the error up.
-	originalPassthroughOn('error', function(error) {
-		this.__streamCatBufferedError = error;
-	}.bind(passThrough));
+	//
+	function handleError(error) {
+		streamCatBufferedError = error;
+	}
+	originalPassthroughOn('error', handleError);
 
 	passThrough.on = function(ev, handler) {
 		originalPassthroughOn(ev, handler);
 
 		if (ev === 'error') {
-			if (this.__streamCatBufferedError !== null) {
-				this.emit(ev, this.__streamCatBufferedError);
+			if (streamCatBufferedError !== null) {
+				this.removeListener('error', handleError);
+				this.emit(ev, streamCatBufferedError);
 			}
 
 			passThrough.on = originalPassthroughOn;
