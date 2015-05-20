@@ -3,6 +3,21 @@ var stream = require('stream');
 var Readable = stream.Readable;
 var PassThrough = stream.PassThrough;
 
+function buffer(chunk, enc) {
+	this.write(chunk, enc);
+}
+
+function handleError(outputStream, next, error) {
+	process.nextTick(function() {
+		outputStream.emit('error', error);
+		outputStream.end();
+
+		if (next) {
+			next();
+		}
+	});
+}
+
 /**
  * Given an ordered list of streams and Buffers, streamCat will pipe each stream or buffer to
  * the writable stream in order.
@@ -10,44 +25,58 @@ var PassThrough = stream.PassThrough;
 function streamCat(streams, writeable, endCallback) {
 
     var concatenate = streams.reduceRight(function(next, stream) {
+		// Set up all 'Stream' error handlers immediately.
+		if (isReadableStream(stream)) {
+			stream.on('error', handleError.bind(null, writeable, next));
+		}
+
         return function() { handleStream(stream, writeable, next); };
     }, endCallback);
 
-	process.nextTick(concatenate);
+	concatenate();
 }
 
 function handleStream(inputStream, outputStream, next) {
+
+
 	if (inputStream instanceof Buffer) {
-		outputStream.write(inputStream);
-		process.nextTick(next);
+
+		process.nextTick(function() {
+			if (!outputStream._writableState.ended) {
+				outputStream.write(inputStream);
+			}
+
+			next();
+		});
+
 	} else if (inputStream instanceof Promise || (inputStream.then && inputStream.catch)) {
+
 		inputStream.then(function(content) {
 			return handleStream(content, outputStream, next);
-		}).catch(handleError);
-	} else if (inputStream instanceof Readable || (inputStream.on && inputStream.read)) {
+		}).catch(handleError.bind(null, outputStream, next));
+
+	} else if (isReadableStream(inputStream)) {
 		inputStream.on('data', function(chunk, enc) {
-			outputStream.write(chunk, enc);
+			// Don't try and write if the writing end is closed
+			if (!outputStream._writableState.ended) {
+				outputStream.write(chunk, enc);
+			}
 		});
 
 		inputStream.on('end', function() {
 			next();
 		});
 
-		inputStream.on('error', handleError);
 	} else {
 		process.nextTick(function() {
-			handleError(new Error("Invalid stream component '" + (typeof inputStream) + "', must be: stream.Readable, Buffer, or Promise"));
-		});
-	}
-
-	function handleError(error) {
-		process.nextTick(function() {
-			outputStream.emit('error', error);
-			outputStream.end();
+			handleError.call(null, outputStream, next, new Error("Invalid stream component '" + (typeof inputStream) + "', must be: stream.Readable, Buffer, or Promise"));
 		});
 	}
 }
 
+function isReadableStream(stream) {
+	return stream instanceof Readable || (stream.on && stream.read);
+}
 
 module.exports = function(streams) {
 	var passThrough = new PassThrough();
@@ -64,17 +93,17 @@ module.exports = function(streams) {
 	// appropriate event handler is attached, the event is fired and the
 	// appropriate handler can pick the error up.
 	//
-	function handleError(error) {
+	function bufferError(error) {
 		streamCatBufferedError = error;
 	}
-	originalPassthroughOn('error', handleError);
+	originalPassthroughOn('error', bufferError);
 
 	passThrough.on = function(ev, handler) {
 		originalPassthroughOn(ev, handler);
 
 		if (ev === 'error') {
 			if (streamCatBufferedError !== null) {
-				this.removeListener('error', handleError);
+				this.removeListener('error', bufferError);
 				this.emit(ev, streamCatBufferedError);
 			}
 
@@ -82,6 +111,6 @@ module.exports = function(streams) {
 		}
 	}.bind(passThrough);
 
-	streamCat(streams, passThrough, function() { passThrough.end(); });
+	streamCat(streams, passThrough, function() { if (!passThrough._writableState.ended)  { passThrough.end(); } });
 	return passThrough;
 };

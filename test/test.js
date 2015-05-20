@@ -1,5 +1,7 @@
 var streamCat = require('../index');
 var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
 
 describe("streamCat(streams)", function() {
 
@@ -98,6 +100,57 @@ describe("streamCat(streams)", function() {
 		badStream.on("error", function(error) {
 			assert.equal(error.message, "Invalid stream component 'object', must be: stream.Readable, Buffer, or Promise");
 			done();
+		});
+	});
+
+	it("should concatenate real streams", function(done) {
+		var testFile = path.join(__dirname, 'test.txt');
+		var streamA = fs.createReadStream(testFile);
+		var streamB = fs.createReadStream(testFile);
+
+		var readStream = streamCat([streamA, streamB]);
+
+		bufferStream(readStream).then(function(buffer) {
+			assert.equal(buffer, "dummy content to stream\ndummy content to stream\n");
+			done();
+		}).catch(done);
+	});
+
+	it("should concatenate real streams with errors", function(done) {
+		var testFile = path.join(__dirname, 'test.txt');
+		var nonExistantTestFile = '/i/dont/exist/i/hope';
+
+		var streamA = fs.createReadStream(testFile);
+		var streamErr = fs.createReadStream(nonExistantTestFile);
+
+		var readStream = streamCat([streamA, streamErr]);
+
+		readStream.on('error', function(error) {
+			assert.equal(error.code, 'ENOENT');
+			done();
+		});
+	});
+
+	it("should concatenate real streams with errors, and ensure all other streams are drained", function(done) {
+		var testFile = path.join(__dirname, 'test.txt');
+		var nonExistantTestFile = '/i/dont/exist/i/hope';
+
+		var streamA = fs.createReadStream(testFile);
+		var streamErr = fs.createReadStream(nonExistantTestFile);
+		var streamB = fs.createReadStream(testFile);
+
+		var errorHandled = false;
+
+		streamB.on('close', function() {
+			assert.equal(errorHandled, true);
+			done();
+		});
+
+		var readStream = streamCat([streamA, streamErr, streamB]);
+
+		readStream.on('error', function(error) {
+			assert.equal(error.code, 'ENOENT');
+			errorHandled = true;
 		});
 	});
 });
