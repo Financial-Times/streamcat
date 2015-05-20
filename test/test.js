@@ -69,6 +69,29 @@ describe("streamCat(streams)", function() {
 		});
 	});
 
+	it("should pass through errors from the concatenated stream, even if preceeding concatenated stream object were succeessful", function(done) {
+		var readStreamOk = streamCat([new Buffer("A")]);
+		var readStreamFail = streamCat([Promise.reject(new Error("fail"))]);
+
+		var readStream = streamCat([readStreamOk, readStreamFail]);
+		readStream.on("error", function(error) {
+			assert.equal(error.message, "fail");
+			done();
+		});
+	});
+
+	it("should pass through the first error it encounters", function(done) {
+		var readStreamOk = streamCat([new Buffer("A")]);
+		var readStreamFailA = streamCat([Promise.reject(new Error("failA"))]);
+		var readStreamFailB = streamCat([Promise.reject(new Error("failB"))]);
+
+		var readStream = streamCat([readStreamOk, readStreamFailA, readStreamFailB]);
+		readStream.on("error", function(error) {
+			assert.equal(error.message, "failA");
+			done();
+		});
+	});
+
 	it("should throw an error when encountering an invalid stream component type", function(done) {
 		var badStream = streamCat([{ an: "object" }]);
 
