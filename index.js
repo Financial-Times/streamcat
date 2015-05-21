@@ -9,8 +9,10 @@ function buffer(chunk, enc) {
 
 function handleError(outputStream, next, error) {
 	process.nextTick(function() {
-		outputStream.emit('error', error);
-		outputStream.end();
+		if (!outputStream._writableState.ended) {
+			outputStream.emit('error', error);
+			outputStream.end();
+		}
 
 		if (next) {
 			next();

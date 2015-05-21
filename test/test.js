@@ -153,6 +153,36 @@ describe("streamCat(streams)", function() {
 			errorHandled = true;
 		});
 	});
+
+	it("should concatenate real streams with errors, and ensure all other streams are drained, but only emit the first error", function(done) {
+		var testFile = path.join(__dirname, 'test.txt');
+		var nonExistantTestFile = '/i/dont/exist/i/hope';
+
+		var streamA = fs.createReadStream(testFile);
+		var streamErr = fs.createReadStream(nonExistantTestFile);
+		var streamB = fs.createReadStream(testFile);
+		var streamErr2 = fs.createReadStream(nonExistantTestFile);
+
+		var errorHandled = false;
+
+		streamB.on('close', function() {
+			assert.equal(errorHandled, true);
+			done();
+		});
+
+		var readStream = streamCat([streamA, streamErr, streamErr2, streamB]);
+
+		readStream.on('error', function(error) {
+			assert.equal(error.code, 'ENOENT');
+
+			if (errorHandled === true) {
+				throw new Error("error was handled twice");
+				return;
+			}
+
+			errorHandled = true;
+		});
+	});
 });
 
 function bufferStream(stream) {
