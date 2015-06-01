@@ -3,9 +3,6 @@ var stream = require('stream');
 var Readable = stream.Readable;
 var PassThrough = stream.PassThrough;
 
-function buffer(chunk, enc) {
-	this.write(chunk, enc);
-}
 
 function handleError(outputStream, next, error) {
 	process.nextTick(function() {
