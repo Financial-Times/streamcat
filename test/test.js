@@ -2,6 +2,7 @@ var streamCat = require('../index');
 var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
+var through = require('through2');
 
 describe("streamCat(streams)", function() {
 
@@ -181,6 +182,35 @@ describe("streamCat(streams)", function() {
 			}
 
 			errorHandled = true;
+		});
+	});
+
+	it("should handle errors correctly when composing streams through a library such as through", function(done) {
+		var readStreamOk = streamCat([new Buffer("A")]);
+		var readStreamFail = streamCat([Promise.reject(new Error("fail"))]);
+
+		var readStream = streamCat([readStreamOk, readStreamFail]);
+
+		// Create a simple pass through stream using through
+		readStream.pipe(through(function(chunk, enc, callback) {
+			this.push(chunk, enc);
+			callback();
+		}));
+
+		readStream.on('error', function(error) {
+			assert.equal(error.message, "fail");
+			done();
+		});
+	});
+
+	it("should handle errors in streams returned from a Promise", function(done) {
+		var readStreamOk = streamCat([new Buffer("A")]);
+		var readStreamFail = streamCat([Promise.resolve(streamCat([Promise.reject(new Error("fail"))]))]);
+
+		var readStream = streamCat([readStreamOk, readStreamFail]);
+		readStream.on("error", function(error) {
+			assert.equal(error.message, "fail");
+			done();
 		});
 	});
 });

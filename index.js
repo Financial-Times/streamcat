@@ -54,7 +54,7 @@ function handleStream(inputStream, outputStream, next) {
 	} else if (inputStream instanceof Promise || (inputStream.then && inputStream.catch)) {
 
 		inputStream.then(function(content) {
-			return handleStream(content, outputStream, next);
+			return streamCat([content], outputStream, next);
 		}).catch(handleError.bind(null, outputStream, next));
 
 	} else if (isReadableStream(inputStream)) {
@@ -98,7 +98,8 @@ module.exports = function(streams) {
 	function bufferError(error) {
 		streamCatBufferedError = error;
 	}
-	originalPassthroughOn('error', bufferError);
+
+	passThrough.once('error', bufferError);
 
 	passThrough.on = function(ev, handler) {
 		originalPassthroughOn(ev, handler);
@@ -107,12 +108,17 @@ module.exports = function(streams) {
 			if (streamCatBufferedError !== null) {
 				this.removeListener('error', bufferError);
 				this.emit(ev, streamCatBufferedError);
+				streamCatBufferedError = null;
 			}
 
 			passThrough.on = originalPassthroughOn;
 		}
 	}.bind(passThrough);
 
-	streamCat(streams, passThrough, function() { if (!passThrough._writableState.ended)  { passThrough.end(); } });
+	streamCat(streams, passThrough, function() {
+		if (!passThrough._writableState.ended)  {
+			passThrough.end();
+		}
+	});
 	return passThrough;
 };
