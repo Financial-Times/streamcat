@@ -4,7 +4,7 @@
     "mocha": "^2.2.4",
     "through2": "^0.6.5"
   },
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Concatenate ReadStreams and Buffers!",
   "main": "index.js",
   "directories": {
