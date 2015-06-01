@@ -1,6 +1,9 @@
 # streamcat
 
-Concatenate Node JS ReadStreams!
+Concatenate Node JS Streams!
+
+You can concatenate the result of Promises, non async buffers and other
+streams allowing you to sequence things into an asynchronous Stream.
 
 ## Usage
 
@@ -18,7 +21,7 @@ streamCat([
 
 ### API
 
-#### `streamCat(listOfStreamsOrBuffers)`
+#### `streamCat(listOfStreamsBuffersOrPromises)`
 
 `streamCat` will take a list of `ReadStream`s, `Buffer`s, or `Promise`s
 returning a `ReadStream` or `Buffer` as its only
