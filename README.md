@@ -51,6 +51,28 @@ streamCat([
 
 ```
 
+#### Error Handling
+
+The `streamCat` function can take an optional options object as its second
+argument.
+
+##### `errorMapper`
+
+The `errorMapper` option allows you to specify a function that can transform
+an error from any of the contatenated streams before emitting the error on the
+returned stream.
+
+The `errorMapper` must return an error object.
+
+```JS
+{
+	errorMapper: function(error) {
+		error.message = error.message + ": my custom context";
+		return error;
+	}
+}
+```
+
 ## License
 
 MIT
