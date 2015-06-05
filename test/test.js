@@ -213,6 +213,26 @@ describe("streamCat(streams)", function() {
 			done();
 		});
 	});
+
+	it("should accept an error mapper function to transform any errors that occur in any stream", function(done) {
+		var readStream = streamCat([Promise.reject(new Error("fail"))], { errorMapper: function(e) { e.message = "massive" + e.message; return e; } });
+		readStream.on("error", function(error) {
+			assert.equal(error.message, "massivefail");
+			done();
+		});
+	});
+
+	it("should run the error mapper function on any errors that occur prior to an error listener being attached", function(done) {
+		var readStream = streamCat([Promise.reject(new Error("fail"))], { errorMapper: function(e) { e.message = "massive" + e.message; return e; } });
+
+		// Give time for the error to trigger.
+		setTimeout(function() {
+			readStream.on("error", function(error) {
+				assert.equal(error.message, "massivefail");
+				done();
+			});
+		}, 200);
+	});
 });
 
 function bufferStream(stream) {
