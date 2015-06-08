@@ -1,8 +1,8 @@
 'use strict';
 var stream = require('stream');
+var bufferError = require('promisebuffer').bufferError;
 var Readable = stream.Readable;
 var PassThrough = stream.PassThrough;
-
 
 module.exports = function(streams, options) {
 	var opts = options || {};
@@ -81,39 +81,7 @@ module.exports = function(streams, options) {
 		return stream instanceof Readable || (stream.on && stream.read);
 	}
 
-	var passThrough = new PassThrough();
-	var streamCatBufferedError = null;
-
-	var originalPassthroughOn = passThrough.on.bind(passThrough);
-
-	// Complex: Node's EventEmitter will fire and forget events - if there is
-	// nothing listening then the event is forgotten.  In the case of 'error'
-	// events, if there are no listeners then an exception is thrown inside
-	// the emitter.  To avoid this and to give some time to attach error
-	// handlers to the final composed stream, if an error occurs _before_ an
-	// error handler has been attached it gets buffered.  Then, when the
-	// appropriate event handler is attached, the event is fired and the
-	// appropriate handler can pick the error up.
-	//
-	function bufferError(error) {
-		streamCatBufferedError = error;
-	}
-
-	passThrough.once('error', bufferError);
-
-	passThrough.on = function(ev, handler) {
-		originalPassthroughOn(ev, handler);
-
-		if (ev === 'error') {
-			if (streamCatBufferedError !== null) {
-				this.removeListener('error', bufferError);
-				this.emit(ev, streamCatBufferedError);
-				streamCatBufferedError = null;
-			}
-
-			passThrough.on = originalPassthroughOn;
-		}
-	}.bind(passThrough);
+	var passThrough = bufferError(new PassThrough());
 
 	streamCat(streams, passThrough, function() {
 		if (!passThrough._writableState.ended)  {
@@ -121,4 +89,4 @@ module.exports = function(streams, options) {
 		}
 	});
 	return passThrough;
-}
+};
