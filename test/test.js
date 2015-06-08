@@ -3,6 +3,7 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 var through = require('through2');
+var bufferStream = require('promisebuffer').buffer;
 
 describe("streamCat(streams)", function() {
 
@@ -234,16 +235,3 @@ describe("streamCat(streams)", function() {
 		}, 200);
 	});
 });
-
-function bufferStream(stream) {
-	return new Promise(function(resolve, reject) {
-		var buffer = "";
-		stream.on('data', function(chunk) {
-			buffer += chunk.toString();
-		});
-
-		stream.on('end', function() {
-			resolve(buffer);
-		});
-	});
-}

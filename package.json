@@ -10,7 +10,9 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "promisebuffer": "^1.0.0"
+  },
   "scripts": {
     "test": "mocha"
   },
