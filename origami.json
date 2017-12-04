@@ -1,0 +1,17 @@
+{
+	"description": "Concatenate ReadStreams and Buffers!",
+	"origamiType": null,
+	"origamiVersion": 1,
+	"keywords": [
+		"streams",
+		"concatenation",
+		"read",
+		"buffer"
+	],
+	"support": "https://github.com/Financial-Times/streamcat/issues",
+	"supportStatus": "active",
+	"supportContact": {
+		"email": "origami.support@ft.com",
+		"slack": "financialtimes/ft-origami"
+	}
+}
