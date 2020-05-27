@@ -2,7 +2,7 @@
   "name": "streamcat",
   "devDependencies": {
     "mocha": "^7.2.0",
-    "through2": "^2.0.3"
+    "through2": "^3.0.1"
   },
   "version": "2.6.1",
   "description": "Concatenate ReadStreams and Buffers!",
