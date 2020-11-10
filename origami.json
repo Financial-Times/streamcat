@@ -1,6 +1,6 @@
 {
 	"description": "Concatenate ReadStreams and Buffers!",
-	"origamiType": null,
+	"origamiType": "library",
 	"origamiVersion": 1,
 	"keywords": [
 		"streams",
